@@ -22,7 +22,7 @@ public static class PlatformSpecificData_Serialize
 public static class SystemInfo_deviceUniqueIdentifier_Getter
 {
     // Postfix patch of SystemInfo.deviceUniqueIdentifier Getter method 
-    // to hide the user's real unique deviceId by generating a random fake one
+    // Made to hide the user's real unique deviceId by generating a random fake one
     public static void Postfix(ref string __result)
     {
         if (MalumMenu.spoofDeviceId.Value){
@@ -86,19 +86,21 @@ public static class VersionShower_Start
 [HarmonyPatch(typeof(PingTracker), nameof(PingTracker.Update))]
 public static class PingTracker_Update
 {
-    // Postfix patch of PingTracker.Update to show game metrics
+    // Postfix patch of PingTracker.Update to show mod name & ping
     public static void Postfix(PingTracker __instance)
     {
-        __instance.text.alignment = TMPro.TextAlignmentOptions.TopRight;
-        
-        __instance.text.text = $"MalumMenu by scp222thj" + // Mod info
-                                Utils.getColoredPingText(AmongUsClient.Instance.Ping); // Colored Ping
+        __instance.text.alignment = TMPro.TextAlignmentOptions.Center;
 
-        // Position adjustments
-        var offset_x = 1.2f;
-        if (HudManager.InstanceExists && HudManager._instance.Chat.chatButton.active) offset_x += 0.8f;
-        if (FriendsListManager.InstanceExists && FriendsListManager._instance.FriendsListButton.Button.active) offset_x += 0.8f;
-        __instance.GetComponent<AspectPosition>().DistanceFromEdge = new Vector3(offset_x, 0f, 0f);
+        if (AmongUsClient.Instance.IsGameStarted){
+
+            __instance.aspectPosition.DistanceFromEdge = new Vector3(-0.21f, 0.50f, 0f);
+
+            __instance.text.text = $"MalumMenu by scp222thj ~ {Utils.getColoredPingText(AmongUsClient.Instance.Ping)}";
+            
+            return;
+        }
+
+        __instance.text.text = $"MalumMenu by scp222thj\n{Utils.getColoredPingText(AmongUsClient.Instance.Ping)}";
         
     }
 }
@@ -114,7 +116,7 @@ public static class HatManager_Initialize
 }
 
 [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.BanMinutesLeft), MethodType.Getter)]
-public static class StatsManager_BanMinutesLeft
+public static class StatsManager_BanMinutesLeft_Getter
 {
     // Prefix patch of Getter method for StatsManager.BanMinutesLeft to remove disconnect penalty
     public static void Postfix(StatsManager __instance, ref int __result)
@@ -176,7 +178,7 @@ public static class Vent_CanUse
 {
     // Prefix patch of Vent.CanUse to allow venting for cheaters
     // Basically does what the original method did with the required modifications
-    public static void Postfix(Vent __instance, GameData.PlayerInfo pc, ref bool canUse, ref bool couldUse, ref float __result)
+    public static void Postfix(Vent __instance, NetworkedPlayerInfo pc, ref bool canUse, ref bool couldUse, ref float __result)
     {
         if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead){
             if (CheatToggles.useVents){

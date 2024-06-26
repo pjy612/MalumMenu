@@ -24,7 +24,7 @@ public static class MalumPPMCheats
                     CheatToggles.DisablePPMCheats("reportBody");
                 }
 
-                List<GameData.PlayerInfo> playerDataList = new List<GameData.PlayerInfo>();
+                List<NetworkedPlayerInfo> playerDataList = new List<NetworkedPlayerInfo>();
 
                 // All players are saved to playerList
                 foreach (var player in PlayerControl.AllPlayerControls){
@@ -67,7 +67,13 @@ public static class MalumPPMCheats
                     CheatToggles.DisablePPMCheats("murderPlayer");
                 }
 
-                List<GameData.PlayerInfo> playerDataList = new List<GameData.PlayerInfo>();
+                if (Utils.isLobby){
+                    HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+                    CheatToggles.murderPlayer = false;
+                    return;
+                }
+
+                List<NetworkedPlayerInfo> playerDataList = new List<NetworkedPlayerInfo>();
 
                 // All players are saved to playerList
                 foreach (var player in PlayerControl.AllPlayerControls)
@@ -108,7 +114,7 @@ public static class MalumPPMCheats
                     CheatToggles.DisablePPMCheats("teleportPlayer");
                 }
 
-                List<GameData.PlayerInfo> playerDataList = new List<GameData.PlayerInfo>();
+                List<NetworkedPlayerInfo> playerDataList = new List<NetworkedPlayerInfo>();
 
                 // All players are saved to playerList apart from LocalPlayer
                 foreach (var player in PlayerControl.AllPlayerControls)
@@ -150,13 +156,13 @@ public static class MalumPPMCheats
                     CheatToggles.DisablePPMCheats("changeRole");
                 }
 
-                List<GameData.PlayerInfo> playerDataList = new List<GameData.PlayerInfo>();
+                List<NetworkedPlayerInfo> playerDataList = new List<NetworkedPlayerInfo>();
 
                 // Shapeshifter role can only be used if it was already assigned at the start of the game
                 // This is done to prevent the anticheat from kicking players
-                if (oldRole == RoleTypes.Shapeshifter){
+                if (oldRole == RoleTypes.Shapeshifter || Utils.isFreePlay){
 
-                    GameData.PlayerOutfit shapeshifterOutfit = new GameData.PlayerOutfit
+                    NetworkedPlayerInfo.PlayerOutfit shapeshifterOutfit = new NetworkedPlayerInfo.PlayerOutfit
                     {
                         ColorId = 0,
                         SkinId = "skin_screamghostface",
@@ -168,7 +174,21 @@ public static class MalumPPMCheats
 
                 }
 
-                GameData.PlayerOutfit impostorOutfit = new GameData.PlayerOutfit
+                if (oldRole == RoleTypes.Phantom || Utils.isFreePlay){
+
+                    NetworkedPlayerInfo.PlayerOutfit phantomOutfit = new NetworkedPlayerInfo.PlayerOutfit
+                    {
+                        ColorId = 0,
+                        HatId = "hat_screamghostface",
+                        SkinId = "skin_screamghostface"
+                    };
+
+                    // Custom PPM choice for Impostor role
+                    playerDataList.Add(PlayerPickMenu.customPPMChoice("Phantom", phantomOutfit, Utils.getBehaviourByRoleType(RoleTypes.Phantom)));
+
+                }
+
+                NetworkedPlayerInfo.PlayerOutfit impostorOutfit = new NetworkedPlayerInfo.PlayerOutfit
                 {
                     ColorId = 0
                 };
@@ -176,7 +196,25 @@ public static class MalumPPMCheats
                 // Custom PPM choice for Impostor role
                 playerDataList.Add(PlayerPickMenu.customPPMChoice("Impostor", impostorOutfit, Utils.getBehaviourByRoleType(RoleTypes.Impostor)));
 
-                GameData.PlayerOutfit engineerOutfit = new GameData.PlayerOutfit
+                NetworkedPlayerInfo.PlayerOutfit trackerOutfit = new NetworkedPlayerInfo.PlayerOutfit
+                {
+                    ColorId = 10,
+                    SkinId = "skin_rhm"
+                };
+
+                // Custom PPM choice for Tracker role
+                playerDataList.Add(PlayerPickMenu.customPPMChoice("Tracker", trackerOutfit, Utils.getBehaviourByRoleType(RoleTypes.Tracker)));
+
+                NetworkedPlayerInfo.PlayerOutfit noisemakerOutfit = new NetworkedPlayerInfo.PlayerOutfit
+                {
+                    ColorId = 10,
+                    HatId = "hat_pk03_Headphones"
+                };
+
+                // Custom PPM choice for Noisemaker role
+                playerDataList.Add(PlayerPickMenu.customPPMChoice("Noisemaker", noisemakerOutfit, Utils.getBehaviourByRoleType(RoleTypes.Noisemaker)));
+
+                NetworkedPlayerInfo.PlayerOutfit engineerOutfit = new NetworkedPlayerInfo.PlayerOutfit
                 {
                     ColorId = 10,
                     SkinId = "skin_Mech",
@@ -186,7 +224,7 @@ public static class MalumPPMCheats
                 // Custom PPM choice for Engineer role
                 playerDataList.Add(PlayerPickMenu.customPPMChoice("Engineer", engineerOutfit, Utils.getBehaviourByRoleType(RoleTypes.Engineer)));
 
-                GameData.PlayerOutfit scientistOutfit = new GameData.PlayerOutfit
+                NetworkedPlayerInfo.PlayerOutfit scientistOutfit = new NetworkedPlayerInfo.PlayerOutfit
                 {
                     ColorId = 10,
                     SkinId = "skin_Science",
@@ -196,7 +234,7 @@ public static class MalumPPMCheats
                 // Custom PPM choice for Scientist role
                 playerDataList.Add(PlayerPickMenu.customPPMChoice("Scientist", scientistOutfit, Utils.getBehaviourByRoleType(RoleTypes.Scientist)));
 
-                GameData.PlayerOutfit crewmateOutfit = new GameData.PlayerOutfit
+                NetworkedPlayerInfo.PlayerOutfit crewmateOutfit = new NetworkedPlayerInfo.PlayerOutfit
                 {
                     ColorId = 10
                 };
@@ -220,6 +258,21 @@ public static class MalumPPMCheats
                             RoleManager.Instance.SetRole(PlayerControl.LocalPlayer, RoleTypes.CrewmateGhost);
                         }
                     }else{
+
+                        /* if (PlayerPickMenu.targetPlayerData.Role.Role == RoleTypes.Shapeshifter && oldRole != RoleTypes.Shapeshifter){
+
+                            Utils.showPopup("\n<size=125%>Changing into the Shapeshifter role is not recommended\nsince shapeshifting will get you kicked by the anticheat");
+                        
+                        } else if (PlayerPickMenu.targetPlayerData.Role.Role == RoleTypes.Noisemaker && oldRole != RoleTypes.Noisemaker){
+                            
+                            Utils.showPopup("\n<size=125%>Changing into the Noisemaker role is not recommended\nsince dying won't trigger the alert for other players");
+                        
+                        } else if (oldRole == RoleTypes.Noisemaker){
+                            
+                            Utils.showPopup("\n<size=125%>Your \"real\" role is still Noisemaker\nso other players will still see the alert when you die");
+                        
+                        } */
+                        
                         RoleManager.Instance.SetRole(PlayerControl.LocalPlayer, PlayerPickMenu.targetPlayerData.Role.Role);
                     }
 
@@ -254,7 +307,7 @@ public static class MalumPPMCheats
                     CheatToggles.DisablePPMCheats("spectate");
                 }
 
-                List<GameData.PlayerInfo> playerDataList = new List<GameData.PlayerInfo>();
+                List<NetworkedPlayerInfo> playerDataList = new List<NetworkedPlayerInfo>();
 
                 // All players are saved to playerList apart from LocalPlayer
                 foreach (var player in PlayerControl.AllPlayerControls){

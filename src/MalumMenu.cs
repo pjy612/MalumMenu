@@ -15,8 +15,8 @@ namespace MalumMenu;
 public partial class MalumMenu : BasePlugin
 {
     public Harmony Harmony { get; } = new(Id);
-    public static string malumVersion = "2.2.0";
-    public static List<string> supportedAU = new List<string> { "2023.11.28", "2024.3.5" };
+    public static string malumVersion = "2.4.0";
+    public static List<string> supportedAU = new List<string> { "2024.6.18" };
     public static MenuUI menuUI;
     // public static ConsoleUI consoleUI;
     public static ConfigEntry<string> menuKeybind;
@@ -65,12 +65,12 @@ public partial class MalumMenu : BasePlugin
         spoofDeviceId = Config.Bind("MalumMenu.Privacy",
                                 "HideDeviceId",
                                 true,
-                                "When enabled it will hide your unique deviceId from Among Us, which could help bypass hardware bans in the future");
+                                "When enabled it will hide your unique deviceId from Among Us, which could potentially help bypass hardware bans in the future");
 
         noTelemetry = Config.Bind("MalumMenu.Privacy",
                                 "NoTelemetry",
                                 true,
-                                "When enabled it will stop Among Us from collecting analytics of your games and sending them Innersloth using Unity Analytics");
+                                "When enabled it will stop Among Us from collecting analytics of your games and sending them to Innersloth using Unity Analytics");
 
 
 

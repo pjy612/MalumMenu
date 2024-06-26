@@ -60,6 +60,9 @@ public static class MalumCheats
         if (CheatToggles.noVentCooldown){
 
             engineerRole.cooldownSecondsRemaining = 0f;
+
+            DestroyableSingleton<HudManager>.Instance.AbilityButton.ResetCoolDown();
+            DestroyableSingleton<HudManager>.Instance.AbilityButton.SetCooldownFill(0f);
         
         }
     }
@@ -97,6 +100,41 @@ public static class MalumCheats
             scientistRole.currentCharge = scientistRole.RoleCooldownValue;
         
         }
+    }
+
+    public static void trackerCheats(TrackerRole trackerRole)
+    {
+        if (CheatToggles.noTrackingCooldown){
+
+            trackerRole.cooldownSecondsRemaining = 0f;
+            trackerRole.delaySecondsRemaining = 0f;
+
+            DestroyableSingleton<HudManager>.Instance.AbilityButton.ResetCoolDown();
+            DestroyableSingleton<HudManager>.Instance.AbilityButton.SetCooldownFill(0f);
+
+        }
+
+        if (CheatToggles.noTrackingDelay){
+
+            MapBehaviour.Instance.trackedPointDelayTime = GameManager.Instance.LogicOptions.GetTrackerDelay();
+
+        }
+
+        if (CheatToggles.endlessTracking){
+
+            // Makes vitals battery so incredibly long (float.MaxValue) so that it never ends
+            trackerRole.durationSecondsRemaining = float.MaxValue;
+
+        // Battery charge is reset to normal value after the cheat is disabled
+        }else if (trackerRole.durationSecondsRemaining > GameManager.Instance.LogicOptions.GetTrackerDuration()){
+            
+            trackerRole.durationSecondsRemaining = GameManager.Instance.LogicOptions.GetTrackerDuration();
+        
+        }
+    }
+    public static void phantomCheats(PhantomRole phantomRole)
+    {
+        return;
     }
 
     public static void useVentCheat(HudManager hudManager)
@@ -157,10 +195,18 @@ public static class MalumCheats
     {
         if (CheatToggles.murderAll){
 
-            // Kill all players by sending a successful MurderPlayer RPC call
-            foreach (var player in PlayerControl.AllPlayerControls)
-            {
-                Utils.murderPlayer(player, MurderResultFlags.Succeeded);
+            if (Utils.isLobby){
+
+                HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+
+            }else{
+
+                // Kill all players by sending a successful MurderPlayer RPC call
+                foreach (var player in PlayerControl.AllPlayerControls)
+                {
+                    Utils.murderPlayer(player, MurderResultFlags.Succeeded);
+                }
+
             }
 
             CheatToggles.murderAll = false;
@@ -180,29 +226,6 @@ public static class MalumCheats
         }
     }
 
-    public static void speedBoostCheat()
-    {
-        // try-catch to avoid some errors I was reciving in the logs related to this cheat
-
-        try{
-
-            // PlayerControl.LocalPlayer.MyPhysics.Speed is the base speed of a player
-            // Among Us uses this value with the associated game setting to calculate the TrueSpeed of the player
-            
-            if(CheatToggles.speedBoost){
-
-                PlayerControl.LocalPlayer.MyPhysics.Speed = 2.5f * 2;
-                
-            }else{
-
-                // By default, Speed is always 2.5f, but this needs a better implementation since hard-coding values isn't great
-                PlayerControl.LocalPlayer.MyPhysics.Speed = 2.5f;
-
-            }
-
-        }catch{}
-    }
-
     public static void noClipCheat()
     {
         try{
@@ -211,4 +234,26 @@ public static class MalumCheats
 
         }catch{}
     }
+
+    public static void speedBoostCheat()
+    {
+        const float defaultSpeed = 2.5f;
+        const float defaultGhostSpeed = 3f;
+        const float speedMultiplier = 2.0f;
+
+        try
+        {
+            // If the speedBoost cheat is enabled, the default speed is multiplied by the speed multiplier
+            // Otherwise the default speed is used by itself
+
+            float newSpeed = CheatToggles.speedBoost ? defaultSpeed * speedMultiplier : defaultSpeed;
+
+            float newGhostSpeed = CheatToggles.speedBoost ? defaultGhostSpeed * speedMultiplier : defaultGhostSpeed;
+
+            PlayerControl.LocalPlayer.MyPhysics.Speed = newSpeed;
+            PlayerControl.LocalPlayer.MyPhysics.GhostSpeed = newGhostSpeed;
+        }
+        catch{}
+    }
+
 }
